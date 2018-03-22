@@ -1,12 +1,12 @@
 = Parte 1 - Ansible core
 
-= Introdução
+== Introdução
 
 Bem-vindo ao nosso laboratório de Ansible-Core. Você deve ter recebido um e-mail nosso com dados de acesso ao laborátorio.
 
 Abra esse e-mail e siga os passos a seguir.
 
-==== Antes de acessar o laboratório verifique os itens abaixo:
+=== Antes de acessar o laboratório verifique os itens abaixo:
 
 * Notebook com acesso à Internet
 * Navagador de Internet com Firefox ou Google Chrome
@@ -14,7 +14,7 @@ Abra esse e-mail e siga os passos a seguir.
 * Linux: Centos ou RHEL (virtualizado ou físico)
 
 
-==== Testando tudo
+=== Testando tudo
 
 Agora você tem os dados do ambiente e notebook funcionando. Faça um teste e tente logar em cada servidor usando putty ou ssh (linux nativo)
 
@@ -39,20 +39,139 @@ Agora você tem os dados do ambiente e notebook funcionando. Faça um teste e te
 |===
 
 
-== Let's Rock
+_Let's Rock_
 
-==== LAB01 - Instalação Ansible-Core
+== LAB01 - Instalação Ansible-Core
 
 Primeiro passo é acessar o servidor Ansible Core Bastion e instale os pacotes relacionados ao Ansible-Core.
 
-===== Instalação do Ansible Core passo - passo
- yum  localinstall -y https://mirror.cedia.org.ec/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm <1>
- yum install -y ansible  <2>
 
-<1> Instalação do repositório epel
-<2> Instalação do Ansible Core
+=== Revise se os repositórios extras-rpms está ativo no servidor
+
+ [root@srv003 ~]# yum repolist
+ Loaded plugins: product-id, search-disabled-repos, subscription-manager
+ repo id                                                            repo name                                                                    status
+ rhel-7-server-extras-rpms/x86_64                                   Red Hat Enterprise Linux 7 Server - Extras (RPMs)                               778
+ rhel-7-server-optional-rpms/7Server/x86_64                         Red Hat Enterprise Linux 7 Server - Optional (RPMs)                          13,445
+ rhel-7-server-rpms/7Server/x86_64                                  Red Hat Enterprise Linux 7 Server (RPMs)                                     18,258
+ repolist: 32,481
 
 
+=== Após confirmar que os repositórios RHEL está ativos executar a instalação do Ansible CORE
+
+ yum install ansible -y
+
+=== A execução da instalação será similar com a saída abaixo
+
+ Loaded plugins: product-id, search-disabled-repos, subscription-manager
+Repodata is over 2 weeks old. Install yum-cron? Or run: yum makecache fast
+rhel-7-server-extras-rpms                                                                                                      | 3.4 kB  00:00:00
+rhel-7-server-optional-rpms                                                                                                    | 3.5 kB  00:00:00
+rhel-7-server-rpms                                                                                                             | 3.5 kB  00:00:00
+(1/8): rhel-7-server-extras-rpms/x86_64/primary_db                                                                             | 359 kB  00:00:00
+(2/8): rhel-7-server-extras-rpms/x86_64/updateinfo                                                                             | 242 kB  00:00:00
+(3/8): rhel-7-server-optional-rpms/7Server/x86_64/updateinfo                                                                   | 1.8 MB  00:00:00
+(4/8): rhel-7-server-optional-rpms/7Server/x86_64/group                                                                        |  24 kB  00:00:00
+(5/8): rhel-7-server-rpms/7Server/x86_64/group                                                                                 | 709 kB  00:00:00
+(6/8): rhel-7-server-optional-rpms/7Server/x86_64/primary_db                                                                   | 6.3 MB  00:00:00
+(7/8): rhel-7-server-rpms/7Server/x86_64/updateinfo                                                                            | 2.5 MB  00:00:00
+(8/8): rhel-7-server-rpms/7Server/x86_64/primary_db                                                                            |  48 MB  00:00:02
+Resolving Dependencies
+--> Running transaction check
+---> Package ansible.noarch 0:2.4.2.0-2.el7 will be installed
+--> Processing Dependency: PyYAML for package: ansible-2.4.2.0-2.el7.noarch
+--> Processing Dependency: python-cryptography for package: ansible-2.4.2.0-2.el7.noarch
+--> Processing Dependency: python-httplib2 for package: ansible-2.4.2.0-2.el7.noarch
+--> Processing Dependency: python-jinja2 for package: ansible-2.4.2.0-2.el7.noarch
+--> Processing Dependency: python-paramiko for package: ansible-2.4.2.0-2.el7.noarch
+--> Processing Dependency: python-passlib for package: ansible-2.4.2.0-2.el7.noarch
+--> Processing Dependency: python2-jmespath for package: ansible-2.4.2.0-2.el7.noarch
+--> Processing Dependency: sshpass for package: ansible-2.4.2.0-2.el7.noarch
+--> Running transaction check
+---> Package PyYAML.x86_64 0:3.10-11.el7 will be installed
+--> Processing Dependency: libyaml-0.so.2()(64bit) for package: PyYAML-3.10-11.el7.x86_64
+---> Package python-httplib2.noarch 0:0.9.2-1.el7 will be installed
+---> Package python-jinja2.noarch 0:2.7.2-2.el7 will be installed
+--> Processing Dependency: python-babel >= 0.8 for package: python-jinja2-2.7.2-2.el7.noarch
+--> Processing Dependency: python-markupsafe for package: python-jinja2-2.7.2-2.el7.noarch
+---> Package python-paramiko.noarch 0:2.1.1-2.el7 will be installed
+---> Package python-passlib.noarch 0:1.6.5-2.el7 will be installed
+---> Package python2-cryptography.x86_64 0:1.7.2-1.el7_4.1 will be installed
+--> Processing Dependency: python-cffi >= 1.4.1 for package: python2-cryptography-1.7.2-1.el7_4.1.x86_64
+--> Processing Dependency: python-idna >= 2.0 for package: python2-cryptography-1.7.2-1.el7_4.1.x86_64
+--> Processing Dependency: python-pyasn1 >= 0.1.8 for package: python2-cryptography-1.7.2-1.el7_4.1.x86_64
+--> Processing Dependency: libcrypto.so.10(OPENSSL_1.0.2)(64bit) for package: python2-cryptography-1.7.2-1.el7_4.1.x86_64
+--> Processing Dependency: python-enum34 for package: python2-cryptography-1.7.2-1.el7_4.1.x86_64
+--> Processing Dependency: python-ipaddress for package: python2-cryptography-1.7.2-1.el7_4.1.x86_64
+---> Package python2-jmespath.noarch 0:0.9.0-3.el7 will be installed
+---> Package sshpass.x86_64 0:1.06-2.el7 will be installed
+--> Running transaction check
+---> Package libyaml.x86_64 0:0.1.4-11.el7_0 will be installed
+---> Package openssl-libs.x86_64 1:1.0.1e-60.el7_3.1 will be updated
+--> Processing Dependency: openssl-libs(x86-64) = 1:1.0.1e-60.el7_3.1 for package: 1:openssl-1.0.1e-60.el7_3.1.x86_64
+---> Package openssl-libs.x86_64 1:1.0.2k-8.el7 will be an update
+---> Package python-babel.noarch 0:0.9.6-8.el7 will be installed
+---> Package python-cffi.x86_64 0:1.6.0-5.el7 will be installed
+--> Processing Dependency: python-pycparser for package: python-cffi-1.6.0-5.el7.x86_64
+---> Package python-enum34.noarch 0:1.0.4-1.el7 will be installed
+---> Package python-idna.noarch 0:2.4-1.el7 will be installed
+---> Package python-ipaddress.noarch 0:1.0.16-2.el7 will be installed
+---> Package python-markupsafe.x86_64 0:0.11-10.el7 will be installed
+---> Package python2-pyasn1.noarch 0:0.1.9-7.el7 will be installed
+--> Running transaction check
+---> Package openssl.x86_64 1:1.0.1e-60.el7_3.1 will be updated
+---> Package openssl.x86_64 1:1.0.2k-8.el7 will be an update
+---> Package python-pycparser.noarch 0:2.14-1.el7 will be installed
+--> Processing Dependency: python-ply for package: python-pycparser-2.14-1.el7.noarch
+--> Running transaction check
+---> Package python-ply.noarch 0:3.4-11.el7 will be installed
+--> Finished Dependency Resolution
+
+ Dependencies Resolved
+
+ ======================================================================================================================================================
+ Package                                Arch                     Version                            Repository                                   Size
+ ======================================================================================================================================================
+Installing:
+ ansible                                noarch                   2.4.2.0-2.el7                      rhel-7-server-extras-rpms                   7.6 M
+Installing for dependencies:
+ PyYAML                                 x86_64                   3.10-11.el7                        rhel-7-server-rpms                          153 k
+ libyaml                                x86_64                   0.1.4-11.el7_0                     rhel-7-server-rpms                           55 k
+ python-babel                           noarch                   0.9.6-8.el7                        rhel-7-server-rpms                          1.4 M
+ python-cffi                            x86_64                   1.6.0-5.el7                        rhel-7-server-rpms                          218 k
+ python-enum34                          noarch                   1.0.4-1.el7                        rhel-7-server-rpms                           52 k
+ python-httplib2                        noarch                   0.9.2-1.el7                        rhel-7-server-extras-rpms                   115 k
+ python-idna                            noarch                   2.4-1.el7                          rhel-7-server-rpms                           94 k
+ python-ipaddress                       noarch                   1.0.16-2.el7                       rhel-7-server-rpms                           34 k
+ python-jinja2                          noarch                   2.7.2-2.el7                        rhel-7-server-extras-rpms                   516 k
+ python-markupsafe                      x86_64                   0.11-10.el7                        rhel-7-server-rpms                           25 k
+ python-paramiko                        noarch                   2.1.1-2.el7                        rhel-7-server-extras-rpms                   267 k
+ python-passlib                         noarch                   1.6.5-2.el7                        rhel-7-server-extras-rpms                   488 k
+ python-ply                             noarch                   3.4-11.el7                         rhel-7-server-rpms                          123 k
+ python-pycparser                       noarch                   2.14-1.el7                         rhel-7-server-rpms                          105 k
+ python2-cryptography                   x86_64                   1.7.2-1.el7_4.1                    rhel-7-server-rpms                          502 k
+ python2-jmespath                       noarch                   0.9.0-3.el7                        rhel-7-server-extras-rpms                    39 k
+ python2-pyasn1                         noarch                   0.1.9-7.el7                        rhel-7-server-rpms                          100 k
+ sshpass                                x86_64                   1.06-2.el7                         rhel-7-server-extras-rpms                    21 k
+Updating for dependencies:
+ openssl                                x86_64                   1:1.0.2k-8.el7                     rhel-7-server-rpms                          492 k
+ openssl-libs                           x86_64                   1:1.0.2k-8.el7                     rhel-7-server-rpms                          1.2 M
+
+ Transaction Summary
+ ======================================================================================================================================================
+Install  1 Package  (+18 Dependent packages)
+Upgrade             (  2 Dependent packages)
+
+ Total download size: 13 M
+ Is this ok [y/d/N]: n <1>
+ Exiting on user command
+
+ Your transaction was saved, rerun it with:
+ yum load-transaction /tmp/yum_save_tx.2018-03-22.07-11.TtgD4g.yumtx
+
+
+
+<1> Digite `Y` - para inicializar a instalação do pacote Ansible
 
 ===== Configurando o usuário Ansible
 
@@ -80,16 +199,16 @@ Neste passo iremos criar um usuário chamado "ansible-core" em cada servidor ser
 
 
 
-==== LAB02 - Configurando um inventário manualmente
+== LAB02 - Configurando um inventário manualmente
 
 Neste laborátorio iremos criar um inventário para nosso laboratório. _Garanta que esteja logado no servidor Ansible Bastion_
 
-===== Criando inventário
+=== Criando inventário
 
  su ansible-core
  vi inventario.ini
 
-===== Exemplo de inventário para este laboratório
+=== Exemplo de inventário para este laboratório
 
  [all:vars]
   ansible_ssh_user=ansible-core
@@ -98,28 +217,38 @@ Neste laborátorio iremos criar um inventário para nosso laboratório. _Garanta
  [banco]
   bd1 ansible_ssh_host=serv002.betina.corp
 
-==== LAB03 - Módulos para execução de comandos
+== LAB03 - Módulos para execução de comandos
 
-===== Utilizando o comando externo - uptime
+=== Utilizando o comando externo - uptime
 
  ansible all -i inventario.ini -m command -a "uptime"
 
 
-===== Instalando um pacote diretamente num grupo de hosts
+=== Instalando um pacote diretamente num grupo de hosts
 
- ansible web -s -i inventario.ini -m yum -a "name=httpd state=present"
+ ansible web -s -i inventario.ini -m yum -a "name=httpd state=present" <1>
 
-===== Inicializando serviço http via comando
+<1> A execução deste comando irá instalar o pacote httpd no `serv001.betina.corp`
 
- ansible web -s -i inventario.ini -m service -a "name=httpd enabled=yes state=started"
 
-===== Usando o módulo ping
+=== Inicializando serviço http via comando
+
+ ansible web -s -i inventario.ini -m service -a "name=httpd enabled=yes state=started" <1>
+ ansible web -s -i inventario.ini -m shell -a "firewall-cmd --add-port 80/tcp"
+ ansible web -s -i inventario.ini -m shell -a "firewall-cmd --add-port 80/tcp --permanent"
+ ansible web -s -i inventario.ini -m shell -a "firewall-cmd --reload"
+
+
+<1> A sequencia da execução dos comandos  irá habiitar o serviço HTTP e liberar a porta 80 para acesso ao serviço
+<2> Abra seu arquivo .yaml com inventario dos servidores deste laboratório e  acesse o serviço HTTP através do seu browser
+
+=== Usando o módulo ping
 
  ansible -i inventario.ini all -m ping <1>
 
 <1> É possível testar se todos os servidores registrados dentro do inventário estão funcionais a nível de rede
 
-===== Validando  o nível de privilégio do usuário ansible-core
+=== Validando  o nível de privilégio do usuário ansible-core
 
  ansible -i inventario.ini all -m command -a id -b <1>
 
@@ -138,16 +267,16 @@ Neste laborátorio iremos criar um inventário para nosso laboratório. _Garanta
 4. Comando para listar todos os serviços:  *__ansible all -i inventario.ini -m command -a "systemctl status"__*
 
 
-==== LAB04 - Construindo primeiro playbook
+== LAB04 - Construindo primeiro playbook
 
-===== Criando o primeiro playbook
+=== Criando o primeiro playbook
   Loge com usuário ansible-core
   su ansible-core
   vi ~./primeiroplaybook.yaml <1>
 
 <1> Crie o arquivo utilizando vim que será utilizado como ferramenta para escrever os playbook
 
-===== Utilize o modelo abaixo como padrão
+=== Utilize o modelo abaixo como padrão
 ------
 ---     <6>
 -
@@ -170,17 +299,17 @@ Neste laborátorio iremos criar um inventário para nosso laboratório. _Garanta
 <5> Nunca utilize TAB apenas espaço
 <6> Sempre inicie o seu script ansible com ---
 
-===== Salve o seu playbook
+=== Salve o seu playbook
 Utilizando o vim salve todas as alterações do script ansible e execute a sequencia de comandos para salvar e  sair do vim ':wq!'
 
-===== Valide se seu playbook tem alguma erro
+=== Valide se seu playbook tem alguma erro
  ansible-playbook -C -i inventario.ini  primeiroplaybook.yaml
 
-===== Execute o playbook
+=== Execute o playbook
 
  ansible-playbook -i inventario.ini  primeiroplaybook.yaml
 
-===== Utilizando loop
+=== Utilizando loop
 
 Utilizando o vim crie o  segundo playbook com o nome _segundoplaybook.yaml_
 
@@ -204,18 +333,18 @@ Utilizando o vim crie o  segundo playbook com o nome _segundoplaybook.yaml_
       - php
 ------
 
-====== Execute o playbook
+==== Execute o playbook
 
   ansible-playbook -i inventario.ini  ~./segundoplaybook.yaml
 
-==== LAB05 - Trabalhando com Handlers "Manipuladores"
+== LAB05 - Trabalhando com Handlers "Manipuladores"
 
 
 *O que são  Handlers ? Qual é sua importância ?*
 
 Semelhante a uma tarefa, exceto que os handlers executam somente em resposta a uma tarefa configurada para notificar o handler na mudança de estado.
 
-===== Exemplo de um playbook que utiliza handlers para gerenciar o serviço do Apache
+=== Exemplo de um playbook que utiliza handlers para gerenciar o serviço do Apache
 
 ------
 ---
@@ -244,11 +373,11 @@ Semelhante a uma tarefa, exceto que os handlers executam somente em resposta a u
 
 Utilizando o vim crie o  terceiro playbook utilizando o modelo acima e  com o nome *_terceiroplaybook.yaml_*
 
-====== Execute o playbook
+=== Execute o playbook
 
   ansible-playbook -i inventario.ini  ~./terceiroplaybook.yaml
 
-===== LAB06 - Trabalhando com TAGS
+== LAB06 - Trabalhando com TAGS
 
 *Por que devo usar Tags ?*
 
@@ -279,11 +408,11 @@ Se você tiver um grande playbook, o uso de TAGs tornar-se útil para executar u
        - configuration
 ------
 
-===== Utilizando tags
+=== Utilizando tags
 
 Utilizando o vim crie o  quarto playbook com o nome *_quartoplaybook.yaml_*
 
-===== Executando playbook com tags
+=== Executando playbook com tags
 
 Executando apenas a tag configuration
 
@@ -293,7 +422,7 @@ Executando apenas a tag notification
 
  ansible-playbook -i inventario.ini  quartoplaybook.yaml --skip-tags "notification"
 
-===== Executando tags padrão do Ansible
+=== Executando tags padrão do Ansible
 
  ansible-playbook example.yaml --tags “tagged” <1>
  ansible-playbook example.yaml --tags “untagged” <2>
@@ -303,15 +432,15 @@ Executando apenas a tag notification
 <2> Será executada todas as tarefas sem tag
 <3> Executa todas as tarefas independente da tag
 
-===== Utilizando tags
+=== Utilizando tags
 
 Utilizando o vim crie o  quinto playbook com o nome *_quintoplaybook.yaml_*
 
-====== Execute o playbook
+=== Execute o playbook
 
  ansible-playbook -i inventario.ini  ~./quintoplaybook.yaml
 
-===== LAB07 - Trabalhando com condicional
+== LAB07 - Trabalhando com condicional
 
 *Quando devo utilizar condicional ?*
 
@@ -334,11 +463,11 @@ Neste caso o condicacional consegue aplicar uma condicação para validar se o a
 
 ----
 
-.Valide com comando
+*Valide com comando*
 
  sudo yum history list 12
 
-===== LAB08 - Trabalhando com com saída de comandos
+== LAB08 - Trabalhando com com saída de comandos
 
 ------
 ---
@@ -354,16 +483,16 @@ Neste caso o condicacional consegue aplicar uma condicação para validar se o a
 
 - debug: var=result
 ------
-===== Testando saída de comando
+=== Testando saída de comando
 
 Utilizando o vim crie o  sexto playbook com o nome *_sextoplaybook.yaml_*
 
-====== Execute o playbook
+==== Execute o playbook
 
  ansible-playbook -i inventario.ini  ~./sextoplaybook.yaml
 
 
-===== LAB09 - Ignorando erros
+== LAB09 - Ignorando erros
 
 -----
 ---
@@ -382,16 +511,16 @@ Utilizando o vim crie o  sexto playbook com o nome *_sextoplaybook.yaml_*
 
 -----
 
-===== Testando a função para ignorar erros
+=== Testando a função para ignorar erros
 
 Utilizando o vim crie o  setimo playbook com o nome *_setimoplaybook.yaml_*
 
-====== Execute o playbook
+=== Execute o playbook
 
  ansible-playbook -i inventario.ini  ~./setimoplaybook.yaml
 
 
-===== Tratando mais erros
+=== Tratando mais erros
 
 -----
 ---
@@ -414,15 +543,15 @@ Utilizando o vim crie o  setimo playbook com o nome *_setimoplaybook.yaml_*
    - debug: msg="this always executes"
 -----
 
-====== Testando a função para ignorar erros
+=== Testando a função para ignorar erros
 
    Utilizando o vim crie o  setimo e meio playbook com o nome *_setimoplaybook-2.yaml_*
 
-====== Execute o playbook
+=== Execute o playbook
 
     ansible-playbook -i inventario.ini  ~./setimoplaybook-2.yaml
 
-===== LAB10 - Tratando arquivos
+== LAB10 - Tratando arquivos
 
 Imagine uma situação onde você precisa alterar uma única linha de um arquivo de configuração em mais de 100 servidores, complicado ?  ++++
 
@@ -450,20 +579,20 @@ Imagine uma situação onde você precisa alterar uma única linha de um arquivo
 <1> Abre o arquivo  /etc/selinux/config e altera a linha para SELINUX=enforcing
 <2> Abre o arquivo  /etc/http/conf/httpd.conf e altera a linha para Listen 8080
 
-====== Testando a função para de tratamento de arquivos
+=== Testando a função para de tratamento de arquivos
 
    Utilizando o vim crie o  oitavo playbook com o nome *_oitavoplaybook-2.yaml_*
 
-====== Execute o playbook
+=== Execute o playbook
 
     ansible-playbook -i inventario.ini  ~./oitavoplaybook-2.yaml
 
 
-===== LAB11 - Trabalhando com variáveis
+== LAB11 - Trabalhando com variáveis
 
 Ansible não é uma linguagem de programação, mas possui vários recursos de linguagem de programação, e uma das mais importantes é o uso variáveis.
 
-===== Exemplo no uso de variáveis no Ansible
+=== Exemplo no uso de variáveis no Ansible
 
 -----
 ---
@@ -491,15 +620,15 @@ Ansible não é uma linguagem de programação, mas possui vários recursos de l
 
 -----
 
-====== Testando a função para de tratamento de arquivos
+=== Testando a função para de tratamento de arquivos
 
 Utilizando o vim crie o  nono playbook com o nome *_nonoplaybook.yaml_*
 
-====== Execute o playbook
+=== Execute o playbook
 
     ansible-playbook -i inventario.ini  ~./nonoplaybook-2.yaml
 
-===== LAB12 - Trabalhando com templates
+== LAB12 - Trabalhando com templates
 
 Se você fez a programação na Web, provavelmente usou um sistema de modelo para gerar HTML. Caso não tenha, um modelo é apenas um arquivo de texto que possui sintaxe especial para especificar variáveis que devem ser substituídas por valores. +
 
@@ -542,12 +671,13 @@ Ansible usa o mecanismo de modelo *_Jinja2_* para implementar modelos +
 <4> Variáveis que serão utilizada na substituição de vários parametros do arquivo de configuração "httpd.conf"
 <5> Este handlers garante que o serviço httpd será reinciado
 
-====== Testando a função jinja2
+=== Testando a função jinja2
 
 Utilizando o vim crie o  decimo playbook com o nome *_decimoplaybook.yaml_*
 
-====== Execute o playbook
+=== Execute o playbook
 
     ansible-playbook -i inventario.ini  ~./decimoplaybook-2.yaml
------
------
+
+
+_Fim do Laboratório - Ansible CORE_
