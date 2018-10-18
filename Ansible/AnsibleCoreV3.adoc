@@ -264,10 +264,10 @@ Entendendo melhor os parametros
 
 === Configurando firewall para habilitar o serviço de firewall usando
 
- ansible web -i inventario.ini   -u ansible -m service -a "name=httpd enabled=yes state=started"
- ansible web -i inventario.ini   -u ansible -m shell -a "firewall-cmd --add-port 80/tcp"
- ansible web -i inventario.ini   -u ansible -m shell -a "firewall-cmd --add-port 80/tcp --permanent"
- ansible web -i inventario.ini   -u ansible -m shell -a "firewall-cmd --reload"
+ ansible web -i inventario.ini   -s -u ansible -m service -a "name=httpd enabled=yes state=started"
+ ansible web -i inventario.ini   -s -u ansible -m shell -a "firewall-cmd --add-port 80/tcp"
+ ansible web -i inventario.ini   -s -u ansible -m shell -a "firewall-cmd --add-port 80/tcp --permanent"
+ ansible web -i inventario.ini   -s -u ansible -m shell -a "firewall-cmd --reload"
 
 
 
