@@ -248,7 +248,7 @@ Ou acessar diretamente o link com todos os modulos - https://docs.ansible.com/an
 
 === Instalando um pacote diretamente num grupo de hosts
 
- ansible  -i inventario.ini  -l "servidor01.labs.corp " -u ansible -m yum -a "name=httpd state=present"
+ ansible  web -i inventario.ini  -s -u ansible -m yum -a "name=httpd state=present"
 
 
 Entendendo melhor os parametros
