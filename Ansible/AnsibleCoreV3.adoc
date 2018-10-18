@@ -93,8 +93,8 @@ Crie o arquivo  _/etc/sudoers.d/ansible_ e coloque o conteudo abaixo para geraç
 
 ou copia aqui e cola ali. ;-)
 
- cat << EOF >/etc/sudoers.d/ansible-core
- ansible-core ALL = (root) NOPASSWD:ALL
+ cat << EOF >/etc/sudoers.d/ansible
+ ansible ALL = (root) NOPASSWD:ALL
  EOF
 
 
