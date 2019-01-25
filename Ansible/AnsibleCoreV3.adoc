@@ -93,8 +93,8 @@ Crie o arquivo  _/etc/sudoers.d/ansible_ e coloque o conteudo abaixo para geraç
 
 ou copia aqui e cola ali. ;-)
 
- cat << EOF >/etc/sudoers.d/ansible-core
- ansible-core ALL = (root) NOPASSWD:ALL
+ cat << EOF >/etc/sudoers.d/ansible
+ ansible ALL = (root) NOPASSWD:ALL
  EOF
 
 
@@ -248,7 +248,7 @@ Ou acessar diretamente o link com todos os modulos - https://docs.ansible.com/an
 
 === Instalando um pacote diretamente num grupo de hosts
 
- ansible  -i inventario.ini  -l "servidor01.labs.corp " -u ansible -m yum -a "name=httpd state=present"
+ ansible  web -i inventario.ini  -s -u ansible -m yum -a "name=httpd state=present"
 
 
 Entendendo melhor os parametros
@@ -264,10 +264,10 @@ Entendendo melhor os parametros
 
 === Configurando firewall para habilitar o serviço de firewall usando
 
- ansible web -i inventario.ini   -u ansible -m service -a "name=httpd enabled=yes state=started"
- ansible web -i inventario.ini   -u ansible -m shell -a "firewall-cmd --add-port 80/tcp"
- ansible web -i inventario.ini   -u ansible -m shell -a "firewall-cmd --add-port 80/tcp --permanent"
- ansible web -i inventario.ini   -u ansible -m shell -a "firewall-cmd --reload"
+ ansible web -i inventario.ini   -s -u ansible -m service -a "name=httpd enabled=yes state=started"
+ ansible web -i inventario.ini   -s -u ansible -m shell -a "firewall-cmd --add-port 80/tcp"
+ ansible web -i inventario.ini   -s -u ansible -m shell -a "firewall-cmd --add-port 80/tcp --permanent"
+ ansible web -i inventario.ini   -s -u ansible -m shell -a "firewall-cmd --reload"
 
 
 
@@ -772,12 +772,13 @@ Neste caso o condicacional consegue aplicar uma condicação para validar se o a
  hosts: web
  remote_user: ansible
  become: yes
+ tasks:
 
-- name: Saida do comando httpd
-  shell: httpd -v|grep version|awk '{print $3}'|cut -f2 -d'/'
-    register: result
+   - name: Saida do comando httpd
+     shell: httpd -v|grep version|awk '{print $3}'|cut -f2 -d'/'
+     register: result
 
-- debug: var=result
+   - debug: var=result
 ------
 === Testando saída de comando
 
@@ -797,13 +798,14 @@ Utilizando o vim crie o  sexto playbook com o nome playbook-saida.yaml
   hosts: web
   remote_user: ansible-core
   become: yes
+  tasks: 
+  
+    - name: ping host
+      command: ping -c1 www.uolbbb.com.jp
+      ignore_errors: yes
 
-  - name: ping host
-    command: ping -c1 www.uolbbb.com.jp
-    ignore_errors: yes
-
-  - name: remove apache mesmo depois do uolbbb.com.jp nao pingar
-    yum: name=httpd state=absent
+    - name: remove apache mesmo depois do uolbbb.com.jp nao pingar
+      yum: name=httpd state=absent
 
 -----
 
