@@ -573,11 +573,11 @@ Utilizando o vim crie o   playbook com o nome *trata-playbook.yaml*
 
       ansible-playbook -i inventario.ini  ~./trata-playbook.yaml
 
-=== Lab 7.4 - Trabalhando com multitask
+=== Lab 7.4 -  Trabalhando com multitask
 
 *O que são multask ?*
 
-Multi Task permite a execução de mais de um Task dentro de uma mesmo playbook, permitindo um único playbook orquestre mais de um alvo simultaneamente.-------
+Multi Task permite a execução de mais de um Task dentro de uma mesmo playbook, permitindo um único playbook orquestre mais de um alvo simultaneamente.
 
 
 ------
