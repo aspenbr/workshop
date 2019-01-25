@@ -573,7 +573,7 @@ Utilizando o vim crie o   playbook com o nome *trata-playbook.yaml*
 
       ansible-playbook -i inventario.ini  ~./trata-playbook.yaml
 
-=== LAB7.2 - Trabalhando com multitask
+=== Lab 7.4 - Trabalhando com multitask
 
 *O que são multask ?*
 
