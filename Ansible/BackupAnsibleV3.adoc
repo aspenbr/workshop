@@ -383,33 +383,17 @@ Ansible Facts são variáveis que são descobertas automaticamente pelo Ansible 
 Neste playbook iremos trabalhar facts trabalhando o seu resultado
 
 
--------
+
  --
- -
-   hosts: all
+ - hosts: all
    tasks:
-     - name: Prints various Ansible facts
-       debug:
-          msg: >
-              The default IPv4 address of {{ ansible_fqdn }}
-              is {{ ansible_default_ipv4.address }}
--------
+   - name: Prints various Ansible facts
+     debug:
+       msg: >
+         The default IPv4 address of {{ ansible_fqdn }}
+         is {{ ansible_default_ipv4.address }}
 
-## Lab 6.4 - Apresentando resultado de um fact
-------
----
--
- name: Leitura dos facts
- hosts: all
- tasks:
 
-    - name: Leitura facts SO Localizacao
-      debug:
-        msg: >
-             O servidor esta localizado na regiao  {{ ansible_local.ativo.local.ala }}
-             No hack {{ ansible_local.ativo.local.rack }}
-             O SO instalado e {{ ansible_local.ativo.so.nome }}
-------
 
 ###   Desligando facts
 
@@ -437,21 +421,8 @@ Neste Lab iremos trabalhar com facts para servidor
 
   ansible web -i inventario.ini  -u ansible -m setup -a 'filter=ansible_eth0'
 
-## Lab 6.4 - Apresentando resultado de um fact
-------
----
--
-  name: Leitura dos facts
-  hosts: all
-  tasks:
 
-  - name: Leitura facts SO Localizacao
-    debug:
-      msg: >
-           O servidor esta localizado na regiao  {{ ansible_local.ativo.local.ala }}
-           No hack {{ ansible_local.ativo.local.rack }}
-           O SO instalado e {{ ansible_local.ativo.so.nome }}
-------
+
 
 ## Lab07 - Trabalhando com variáveis
 
@@ -567,71 +538,11 @@ Salve o playbook  com o nome _playbook_variavel.yaml_
 
 === Testando a função para de tratamento de arquivos
 
-Utilizando o vim crie o   playbook com o nome *trata-playbook.yaml*
+  Utilizando o vim crie o   playbook com o nome *_trata-playbook.yaml_*
 
 === Execute o playbook
 
       ansible-playbook -i inventario.ini  ~./trata-playbook.yaml
-
-=== LAB7.2 - Trabalhando com multitask
-
-*O que são multask ?*
-
-Multi Task permite a execução de mais de um Task dentro de uma mesmo playbook, permitindo um único playbook orquestre mais de um alvo simultaneamente.-------
-
-
-------
----
--
-
-   hosts: servlab-a.labs.corp
-   name: exercicio 02
-   user: root
-
-   tasks:
-
-
-       - name: Instala o servidor Apache
-         yum:
-           name: httpd
-           state: latest
-
-       - name: Instala Firewalld
-         yum:
-           name: firewalld
-           state: latest
-
-       - name: libera a porta 80
-         firewalld:
-              port: 80/tcp
-              permanent: true
-              immediate: true
-              state: enabled
-
-       - name: checa se o servico esta ativo
-         systemd:
-              name: httpd
-              enabled: true
-              state: started
-
-       - name: copia arquivo
-         copy:
-           content: "Welcome to the example.com intranet! ."
-           dest: /var/www/html/index.html
-
-
-
-- name:  exercicio 02
- hosts: servlab-b.labs.corp
- user: root
-
- tasks:
-
-    - name: testa acesso
-      uri:
-       url: http://10.211.55.8
-       status_code: 200
-------
 
 == LAB08 - Trabalhando com Handlers "Manipuladores"
 
@@ -706,7 +617,7 @@ Se você tiver um grande playbook, o uso de TAGs tornar-se útil para executar u
 
 === Utilizando tags
 
-Utilizando o vim crie o  quarto playbook com o nome playbook-tag.yaml
+Utilizando o vim crie o  quarto playbook com o nome *_playbook-tag.yaml_*
 
 === Executando playbook com tags
 
@@ -730,7 +641,7 @@ Executando apenas a tag notification
 
 === Utilizando tags
 
-Utilizando o vim crie o  quinto playbook com o nome playbook-tag.yaml
+Utilizando o vim crie o  quinto playbook com o nome *_playbook-tag.yaml_*
 
 === Execute o playbook
 
@@ -781,7 +692,7 @@ Neste caso o condicacional consegue aplicar uma condicação para validar se o a
 ------
 === Testando saída de comando
 
-Utilizando o vim crie o  sexto playbook com o nome playbook-saida.yaml
+Utilizando o vim crie o  sexto playbook com o nome *_playbook-saida.yaml_*
 
 ==== Execute o playbook
 
@@ -809,13 +720,43 @@ Utilizando o vim crie o  sexto playbook com o nome playbook-saida.yaml
 
 === Testando a função para ignorar erros
 
-Utilizando o vim crie o  setimo playbook com o nome playbook-erros.yaml
+Utilizando o vim crie o  setimo playbook com o nome *_playbook-erros.yaml_*
 
 === Execute o playbook
 
  ansible-playbook -i inventario.ini  ~./playbook-erros.yaml
 
 
+=== Tratando mais erros
+
+-----
+---
+-
+  name: Ignorando errors
+  hosts: web
+  remote_user: ansible
+  become: yes
+
+  tasks:
+   - block:
+   - debug: msg='i execute normally'
+   - command: /bin/false
+   - debug: msg='i never execute, cause ERROR!'
+ rescue:
+   - debug: msg='I caught an error'
+   - command: /bin/false
+   - debug: msg='I also never execute :-('
+ always:
+   - debug: msg="this always executes"
+-----
+
+=== Testando a função para ignorar erros
+
+   Utilizando o vim crie o  setimo e meio playbook com o nome *_playbook-erros2.yaml_*
+
+=== Execute o playbook
+
+    ansible-playbook -i inventario.ini  ~./playbook-erros2.yaml
 
 == LAB13 - Tratando arquivos
 
@@ -847,7 +788,7 @@ Imagine uma situação onde você precisa alterar uma única linha de um arquivo
 
 === Testando a função para de tratamento de arquivos
 
-   Utilizando o vim crie o  oitavo playbook com o nome playbook-tratamento.yaml
+   Utilizando o vim crie o  oitavo playbook com o nome *_playbook-tratamento.yaml_*
 
 === Execute o playbook
 
@@ -900,43 +841,11 @@ Ansible usa o mecanismo de modelo *_Jinja2_* para implementar modelos +
 
 === Testando a função jinja2
 
-Utilizando o vim crie o  decimo playbook com o nome playbook-jinga2.yaml
+Utilizando o vim crie o  decimo playbook com o nome *_playbook-jinga2.yaml_*
 
 === Execute o playbook
 
     ansible-playbook -i inventario.ini  ~./playbook-jinga2.yaml
-
-==== Lab 14.1 - Usando Templates mais variaveis
-
-Vamos usar a seguinte estrutura o arquivo do playbook vai se chamar Exemploj2.yaml e crie um arquivo "hello_word.j2".
-
-
-Preencha o arquivo hello_word.j2 com seguinte conteudo:
-
- {{ variable_to_be_replaced }}
- This line won't be changed
- Variable given as inline - {{ inline_variable }} - :)
-
-Salve-o e crie um novo arquivo chamado Exemploj2.yaml com seguinte conteudo:
--------
----
--
-  hosts: localhost
-  name: Exemplo para o uso de jinja2
-  vars:
-    variable_to_be_replaced: 'Hello world'
-    inline_variable: 'hello again'
-
-  tasks:
-    - name: Ansible Template Example
-      template:
-        src: /opt/Labs/j2/hello_word.j2
-        dest: /tmp/teste.txt
-
--------
-
-Execute o playbook ( ansible-paybook -i  Exemploj2.yaml)
-
 
 == LAB15 - Ansible e servidor Windows
 
