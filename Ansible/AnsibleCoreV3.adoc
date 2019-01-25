@@ -1,4 +1,4 @@
-= Parte 1 - Ansible core
+= Parte 1 - Ansible core (Ansible puro)
 
 == Introdução
 
@@ -798,8 +798,8 @@ Utilizando o vim crie o  sexto playbook com o nome playbook-saida.yaml
   hosts: web
   remote_user: ansible-core
   become: yes
-  tasks: 
-  
+  tasks:
+
     - name: ping host
       command: ping -c1 www.uolbbb.com.jp
       ignore_errors: yes
