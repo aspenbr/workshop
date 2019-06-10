@@ -1,0 +1,12 @@
+= Lab02 - Gerenciamento do Ceph
+
+
+
+
+Seja bem vindo a gerencia do ceph2
+
+== Conjunto de recursos de gerencia
+
+Este workshop simula um ambiente de produção contando com 9 servidores dedicados para depoloyment e uso do Ceph.
+
+.

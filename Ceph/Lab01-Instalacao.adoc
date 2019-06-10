@@ -1,32 +1,31 @@
-= Sumário  Ispinin
--------
+= LAB01 - Instalação do Ceph
 
-= Visão macro para instalação do CEPH
-  - Entendendo a topologia  para implementação do Ceph
-  - Preparando o ambiente para deploy Ceph
-     - Subscrevendo os repositórios CEPH
-     - Criação do usuário Ansible
-     - Compartilhamento da chave SSH do usuário Ansible
-     - Sincronismo de horário
-     - Configurando servidor de nomes ou /etc/hosts
 
-== Entendendo a  casa topologia para imeplementação do ceph
+
+
+
+
+
+Seja bem vindo ao Workshop Ceph dedicado para versão 3.2
 
 == Conjunto de recursos do workshop
 
-.Tabela de ips dos servidores (External - 30.0) (Internal - 50.0)
+Este workshop simula um ambiente de produção contando com 9 servidores dedicados para depoloyment e uso do Ceph.
+
+.Mapa dos servidores
 |===
-|IPS| Servidor
-|192.168.10.44 | apoio.lab.corp
-|192.168.20.44 | apoio.labs.corp
-|192.168.10.43 | deploy.lab.corp
-|192.168.20.43 | deploy.labs.corp
-|192.168.10.40 | ceph01.labs.corp
-|192.168.20.40 | ceph01.labs.corp
-|192.168.10.41 | ceph02.labs.corp
-|192.168.20.41 | ceph02.labs.corp
-|192.168.10.42 | ceph03.labs.corp
-|192.168.20.42 | ceph03.labs.corp
+|IPS| Servidor | Função
+|192.168.10.6  | idm.labs.corp | Servidor de horário , DNS e diretório
+|192.168.10.50  | cephdeploy.labs.corp | Servidor para deployment do Ceph
+|192.168.10.101 | ceph01.labs.corp | Servidor dedicado para as funções de MON - MGR - MDS
+|192.168.10.102 | ceph02.labs.corp | Servidor dedicado para as funções de - MGR - MDS
+|192.168.10.103 | ceph03.labs.corp | Servidor dedicado as funções de - MGR - MDS
+|192.168.10.104 | ceph04.labs.corp | Servidor dedicado para função OSD
+|192.168.10.105 | ceph05.labs.corp | Servidor dedicado para função OSD
+|192.168.10.106 | ceph06.labs.corp | Servidor dedicado para função OSD
+|192.168.10.107 | ceph07.labs.corp | Ceph  Gateway iSCSI - FileServer
+|192.168.10.108 | ceph08.labs.corp | Ceph  Gateway object store
+|192.168.10.52  | cephclient.labs.corp | Ceph cliente (node)
 |===
 
 .Recursos de rede

@@ -1,0 +1,7 @@
+= Seja bem vindo ao Laboratório Ceph
+
+
+Este documento é do projeto Ceph - LABS
+
+include::Lab01-instalacao.adoc[]
+include::Lab02-Gerencia.adoc[]
