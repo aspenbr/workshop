@@ -10,7 +10,7 @@
      - Sincronismo de horário
      - Configurando servidor de nomes ou /etc/hosts
 
-== Entendendo a topologia para imeplementação do ceph
+== Entendendo a  casa topologia para imeplementação do ceph
 
 == Conjunto de recursos do workshop
 
