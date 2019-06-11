@@ -3,9 +3,9 @@
 
 
 
-Seja bem vindo a gerencia do ceph2
+Seja bem vindo a gerência do Ceph 3.2
 
-== Conjunto de recursos de gerencia
+== Conjunto de recursos de gerência
 
 Este workshop simula um ambiente de produção contando com 9 servidores dedicados para depoloyment e uso do Ceph.
 
