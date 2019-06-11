@@ -1,12 +1,36 @@
-= Lab02 - Gerenciamento do Ceph
+= LAB02 - Gerenciamento do Ceph
+
+
+= LAB02 - Gerenciando o Ceph
 
 
 
 
-Seja bem vindo a gerência do Ceph 3.2
 
-== Conjunto de recursos de gerência
 
-Este workshop simula um ambiente de produção contando com 9 servidores dedicados para depoloyment e uso do Ceph.
 
-.
+Seja bem vindo ao laborátorio de  gerência do Ceph 3.2
+
+== Como é feita a gerência do Ceph ?
+
+== O pode do Ansible na gerência do Ceph Cluster
+
+
+== Acessando as métricas do Ceph
+
+
+=== Workout do laborátorio02 - Atividades
+
+.Atividades do laboratório02
+|===
+|Atividade | Objetivos
+|01| Gerenciar  as configurações do ceph cluster via Ansible
+|02| Expandir os discos do cluster Ceph
+|03| Acessar os recursos de métricas
+|===
+
+=== Gerenciando  as configurações do ceph cluster via Ansible
+
+=== Expandindo os discos do cluster Ceph
+
+=== Acessando os recursos de métricas
