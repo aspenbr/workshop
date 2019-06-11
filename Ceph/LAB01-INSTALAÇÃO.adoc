@@ -12,6 +12,12 @@ Seja bem vindo ao Workshop Ceph dedicado a versão 3.2
 
 Este workshop simula um ambiente de produção contando com 9 servidores dedicados para depoloyment e uso do Ceph.
 
+.Informações Blueprint utilizado
+|===
+|Nome do blueprint| versão | Detalhes
+|LATAM-SA-BR-CEPH-LABS-Deploy-V3.3-Completo-bp | 3.3 | Versão do Ceph 3.2 - systemd
+|===
+
 .Mapa dos servidores
 |===
 |IP interno| Servidor | Função

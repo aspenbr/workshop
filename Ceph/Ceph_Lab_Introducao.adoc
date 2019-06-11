@@ -3,5 +3,5 @@
 
 Este documento é do projeto Ceph - LABS
 
-include::Lab01-instalacao.adoc[]
-include::Lab02-Gerencia.adoc[]
+include::LAB01-INSTALAÇÃO.adoc[]
+include::LAB02-GERENCIA.adoc[]
