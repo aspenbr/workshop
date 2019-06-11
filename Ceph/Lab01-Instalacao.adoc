@@ -6,7 +6,7 @@
 
 
 
-Seja bem vindo ao Workshop Ceph dedicado para versão 3.2
+Seja bem vindo ao Workshop Ceph dedicado a versão 3.2
 
 == Conjunto de recursos do workshop
 
@@ -14,7 +14,7 @@ Este workshop simula um ambiente de produção contando com 9 servidores dedicad
 
 .Mapa dos servidores
 |===
-|IPS| Servidor | Função
+|IP interno| Servidor | Função
 |192.168.10.6  | idm.labs.corp | Servidor de horário , DNS e diretório
 |192.168.10.50  | cephdeploy.labs.corp | Servidor para deployment do Ceph
 |192.168.10.101 | ceph01.labs.corp | Servidor dedicado para as funções de MON - MGR - MDS
@@ -31,9 +31,326 @@ Este workshop simula um ambiente de produção contando com 9 servidores dedicad
 .Recursos de rede
 |===
 |Recurso |IP
-|NTP     |a.st1.ntp.br
-|DNS     |192.168.10.1
-|GATEWAY |192.168.10.2
+|NTP     |192.168.10.6
+|DNS     |192.168.10.6
+|GATEWAY |192.168.10.50
+|===
+
+
+.Mapa dos usuários utilizados no workshop
+|===
+|Usuários |Senha| Função
+|root    |rooter2019 | usuário root
+|ansible |rooter2019 | usuário ansible (usando para gerência e deployment)
+|admin   |rooter2019 | usuário administrativo do IDM
+|===
+
+== O que é necessário para acessar o ambiente do laborátorio ?
+
+* Acesso a Internet
+* Cliente SSH
+  - Windows Donwload Putty SSH: https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.71-installer.msi
+  - Passo para conectar a um servidor Linux usando Putty SSH: https://www.ssh.com/ssh/putty/windows/
+
+=== Workout do laborátorio01 - Atividades
+
+.Atividades do laboratório01
+|===
+|Atividade | Objetivos
+|01| Planejar e instalação do Ceph
+|02| Realizar o deployment de um Cluster Ceph utilizando ansible
+|03| Executar o  deployment Ceph Ansible
+|04| Checar a saúde do cluster pós instalação
+|===
+
+
+=== Atividade 01: _Planejando a instalação do Ceph_
+
+==== Validando a configuração do Ceph Storage
+
+==== Requisitos de hardware
+
+Trabalhando com requisitos mínimo de hardware. Não há uma única opção de hardware recomendada para implantar o Red Hat Ceph Storage. Dependendo do caso de uso suportado pelo cluster, seja otimização de IOPS, taxa de transferência ou capacidade, uma configuração de hardware diferente pode ser aplicada. Os requisitos para cada caso de uso podem se concentrar em discos de alto desempenho (IOPS), especificações gerais de throughput de hardware (taxa de transferência) ou unidades de disco (capacidade) mais baratas.
+
+É possível executar um cluster focado prova de conceito com hardware com baixo potencial. Para uma implementação de produção, no entanto, os requisitos mínimos de hardware recomendados para cada daemon Ceph estão listados abaixo:
+
+.Hardware recomendado mínimo para Ceph Daemons
+|===
+|Hardware | ceph-osd | ceph-mon | ceph-radosgw | ceph-mdss
+|Processor| 1x AMD64 or Intel64 | 1x ADM64 or Intel 64| 1x AMD64 or Intel 64 | 1x AMD64 or Intel 64
+|RAM| 16 GB por host, mais 2 GB adicional por OSD daemon 	 | 1 GB por daemon | 1 GB por daemon | 1 GB por daemon
+|Disk| Um storage dispositivo por OSD daemon. Separar do sistema do sistema operacional | 10 GB por daemon | 5 GB por daemon | 1 MB por daemon, mais espaço para logs
+|Network| 2x Gigabit Ehternet NICs | 2x Gigabit Ethernet NICs | 2x Gigabit Ethernet NICs | 2x Gigabit Ethernet NICs
+|===
+
+Pontos importantes.
+
+ * Ao determinar quantos OSDs fornecer de cada host OSD, tenha cuidado ao selecionar uma densidade de armazenamento balanceada (o número de OSDs fornecidos por host OSD). Um cluster de armazenamento menos denso implica que os daemons e processos do Ceph são distribuídos por mais hosts, distribuindo a carga de trabalho. Um erro arquitetural comum é construir um pequeno cluster com uma densidade de armazenamento muito alta, levando a tráfego de rede excessivo durante as operações de rebalanceamento e recuperação.
+ * Sobre o uso de RAID. Geralmente, os dispositivos usados pelos OSDs não devem usar o RAID. O Ceph usa a codificação de replicação ou eliminação para proteger objetos no cluster, portanto, o uso de RAID para proteção adicional de dados para OSDs é normalmente desnecessário, adiciona custo e reduz a capacidade.
+
+==== Recomendação de rede
+
+Recomendamos que, se possível, 10 Gigabit Ethernet seja usado para produção. Hosts OSD densos devem usar um link Ethernet de 10 Gigabits para cada 12 OSDs fornecidos pelo host OSD. Uma rede mais rápida permitirá que o cluster se reequilibre e recupere mais rapidamente em caso de falha do OSD.
+
+Além disso, a configuração padrão coloca todo o tráfego em uma rede. É melhor configurar redes separadas para tráfego público e de cluster. A rede pública é usada para o tráfego do cliente e comunicação com o MONs. A rede de cluster é usada para pulsação OSD, replicação, backfilling e tráfego de recuperação. Essas redes devem usar placas de interface de rede física separadas.
+
+Pontos que precisam ser checados na parte de rede antes da instalação
+
+* Endereço IP estático
+* Ativação da configuração de rede no boot
+* NTP sincronizado em cada nó participante do cluster
+* Configuração Firewall
+
+.Configuração do Firewall
+|===
+|Nome do serviço | Portas | Descrição
+|Monitor | 6789/TCP | Comunicação do Ceph cluster
+|Manager | 7000/TCP - 8003/TCP - 9283/TCP | Comunicação Ceph Manager dasboard - Ceph Manager RESTful API via HTTPS - Comunicação Prometheus plug-in
+|OSD | 6800-7300/TCP | Cada OSD utiliza tres dentro deste range. Um porta para comunicação com clientes e monitoramento sobre a rede pública;uma porta para enviar dados para outros nós OSD ou sobre rede pública;e terceira é para troca de pacotes heartbeat na rede cluster ou publica
+|RADOS Gateway| 7480/TCP | RADOS Gateway utiliza porta 7480/TCP mas está porta pode ser alterada para porta 80/TCP ou 443/TCO se estiver usando SSL/TLS
+|===
+
+==== Validando a configuração de pré-requisitos de software - _Red Enterprise Linux Server_
+
+Antes de iniciar a instalação de um cluster Ceph é necessário preparr o sistema operacional indepedente da função que o nó irá desempenhar dentro do cluster Ceph
+
+Pontos que precisam ser checados antes da instalação
+
+* Realize uma instalação básica da mesma versão do Red Hat Enterprise Linux 7 em todos os hosts.
+
+* Use o comando subscription-manager para registrar os sistemas e ativar os canais de software corretos (ou ter as imagens ISO disponíveis para uma instalação desconectada).
+
+* Configure a resolução de rede e nome para todos os hosts e configure a sincronização de horário do NTP.
+
+* Garanta a configuração correta do firewall local.
+
+* Configure um usuário (não ceph) em todos os nós para uso pelo Ansible e garanta o acesso do sudo ao root.
+
+* Certifique-se de que o usuário que executará os Ansible Playbooks no nó de implementação possa usar a autenticação baseada em chave SSH para efetuar login como o usuário Ansible nos nós do cluster.
+
+* Verifique se o nó de implementação pode executar tarefas Ansible nos nós do cluster.
+
+
+==== Repositórios - _Red Enterprise Linux Server_
+
+Os repositórios para instalação do Ceph devem ser subscritos em todos os servidores participantes do cluster do Ceph.
+
+.Procedimentos para subcrição dos servidores Ceph
+|===
+|Passo | Comando | Descrição
+|1| subscription-manager --disable="*"  | Desabilita todos os repositórios. É necessário para que outros reposótirios afetem a instalação do Ceph
+|2| subscription-manager --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms| Repositórios básicos do RHEL para instalação do Ceph. Deve estar assinado em todos nós participantes do cluster
+|3| subscription-manager --enable=rhel-7-server-rhceph-3-mon-rpms | Subscreva todos os nós responsáveis pelo  monitoramento
+|4| subscription-manager --enable=rhel-7-server-rhceph-3-osd-rpms | Subscreva todos os nós responsáveis pelo  pelo OSD
+|5| subscription-manager --enable=rhel-7-server-rhceph-3-tools-rpms | Subscreva todos os nós responsáveis pelo  - Ansible deployment host, MDS, RADOS Gateway, ou Ceph client
+|===
+
+==== Preparando o usuário Ansible
+
+O Red Hat Ceph Storage fornece um conjunto de Ansible Playbooks para instalar e configurar seu cluster Ceph. Você executará um playbook como um usuário comum no host de implementação e o Ansible efetuará login nos hosts do cluster para instalá-los e configurá-los.
+
+Antes de usar esses playbooks, você precisa preparar o host de implantação e os hosts de cluster com um usuário comum para Ansible.
+
+Esse usuário no host de implementação é configurado para efetuar login como o mesmo usuário em qualquer um dos hosts de cluster usando a autenticação baseada em chave SSH. O usuário também é configurado em todos os hosts para ter acesso sudo sem senha para executar comandos como o usuário root.
+
+O procedimento básico para configurar isso é:
+
+* Crie um usuário para Ansible que tenha o mesmo nome de usuário no host de implementação e em todos os hosts de cluster. Para esta discussão, usamos o nome ansible, mas qualquer nome não utilizado funcionará. Não use o nome de usuário ceph, que é reservado para os daemons do Ceph.
+
+* Use ssh-keygen para gerar um par de chaves SSH na conta do usuário no host de implementação.
+
+* Distribuir a chave pública SSH do usuário ansiável para o arquivo ~ / .ssh / authorized_keys do usuário em todos os hosts. Certifique-se de que o arquivo de chaves autorizadas seja legível apenas pelo usuário.
+
+* Crie um arquivo /etc/sudoers.d/ansible que conceda o acesso root sem senha do usuário ansible. Ele deve ser legível apenas pelo usuário root e ter um conteúdo semelhante ao seguinte:
+
+  ansible ALL=(root) NOPASSWD:ALL
+
+
+=== Atividade 02: _Realizando deployment do Cluster Ceph usando Ansible_
+
+==== Instalação do deployment Red Hat Ceph Ansible
+
+Quando todos os servidores participantes do cluster Ceph estiverem prontos. É necessário instalar o pacote _ceph-ansible_ em seu servidor de deployment
+
+ #yum install -y ceph-ansible
+
+===== Sobre o deploymento Ceph-ansible playbooks
+
+Ansible é um utilitário de automação, gerenciamento de configuração e orquestração de código aberto. Pode automatizar e padronizar a configuração de servidores remotos e máquinas virtuais.
+
+O Red Hat Ceph Storage usa o Ansible para instalar e configurar o cluster do Ceph.
+
+Ansible automatiza as operações através de um playbook baseado em texto. Um playbook é um arquivo que contém uma lista de reproduções que precisam ser executadas em uma lista especificada de sistemas.
+
+Cada PLAYBOOK é composto por uma série de tarefas para executar em sequência. O Ansible é projetado para que os playbooks bem escritos sejam idempotentes, o que significa que eles podem ser executados várias vezes e alterar apenas as coisas que precisam ser alteradas nos hosts de destino.
+
+Isso permite que um manual seja executado novamente para corrigir erros ou alterações que foram feitas nos sistemas de destino.
+
+Para determinar a lista de hosts disponíveis, o Ansible geralmente usa um arquivo de inventário baseado em texto. Um arquivo de inventário muito simples pode consistir em uma lista de hosts, um host por linha.
+
+Um arquivo de inventário mais complexo pode organizar esses hosts em grupos, usando uma sintaxe semelhante a INI, em que cada grupo começa com o nome do grupo entre colchetes, seguido pela lista de hosts no grupo. Um host pode ser listado em vários grupos. O grupo especial inclui todos os hosts no inventário.
+
+
+==== Entendendo  arquivos de configuração do Ceph Ansible
+
+Para realizar o deploymento do Red Hat Ceph Storage 3 usando cluster é necessário entender o papel dos seus principais playbooks.
+
+.Inventário dos playbooks Ansible_
+|===
+|Arquivo de configuração | Funcionalidade | exemplo
+|/etc/ansible/hosts | Configure um arquivo de inventário Ansible para listar seus nós de cluster e atribuí-los aos grupos com base em suas funções (OSD, MON, cliente e assim por diante). | colocar public_network
+|/usr/share/ceph-ansible/group_vars/all.yml | Grupo de arquivo  variável de grupo com diretivas que se aplicam a todos os hosts do Ceph.
+|/usr/share/ceph-ansible/group_vars/osds.yml | Grupo de arquivo variável de grupo com diretivas que se aplicam aos OSDs.
+|/usr/share/ceph-ansible/group_vars/clients.yml | Grupo arquivo de variável de grupo com diretivas que se aplicam a clientes.
+|/usr/share/ceph-ansible/site.yml | Arquivo  responsável pela start da instalação
+|===
+
+
+==== Configuração do inventário
+
+Seu primeiro passo é configurar seu arquivo de inventário. Os playbooks executáveis usam um grupo de hosts para cada tipo de nó Ceph: mons para monitores, osds para OSDs, mgrs para gerenciadores, mdss para MDSs, clientes para clientes Ceph, rgws para nós Gateway RADOS, iscsi-gws para gateways iSCSI e rbd-espelhos para ativar o espelhamento de RBD.
+
+Você precisa atribuir seus hosts Ceph aos grupos apropriados no arquivo de inventário com base em sua função.
+
+*Exemplo do arquivo de configuração do inventário*
+ [root@server ~]# cat /etc/ansible/hosts
+ [mons]
+ monitor-host-name
+
+ [mgrs]
+ manager-host-name
+
+ [osds]
+ osd-host-name
+
+==== Ajustando ceph-ansible playbook
+
+*Dica para visualização e edição do arquivo YAML (Ansible)*
+
+Se você usar o editor de texto Vim, poderá aplicar algumas configurações que facilitarão a edição de seus playbooks e arquivos variáveis. Por exemplo, adicione a seguinte linha ao seu arquivo $ HOME / .vimrc, e se o vim detectar que você está editando um arquivo YAML, ele recua por dois espaços quando você pressiona a tecla Tab, identifica as linhas subsequentes e expande as guias nos espaços.
+
+ autocmd FileType yaml setlocal ai ts=2 sw=2 et
+
+
+===== Configurando o group_vars/all.yml
+
+O arquivo group_vars / all.yml contém parâmetros comuns que são aplicados a todos os nós do Ceph no inventário.
+
+A tabela a seguir lista alguns parâmetros principais que são comumente definidos.
+
+|===
+|Nome do parametro | Valor Descrição | Descrição
+| fetch_directory| ~/ceph-ansible-keys | Localização do diretório temporário usado para copiar chaves de autenticação para nós do cluster
+| ceph_origin | repository | Onde obter Ceph de. repositório usa um repositório de pacotes
+| ceph_repository | rhcs | O repositório usado para instalar o Red Hat Ceph Storage. O rhcs usa pacotes oficiais do Red Hat Ceph Storage
+| ceph_repository_type | cdn or iso | A fonte de instalação para rhcs, a Content Distribution Network ou uma imagem ISO local
+| ceph_rhcs_iso_path |Path to ISO | Se estiver usando o tipo de repositório iso, o caminho para o ISO de Armazenamento do Red Hat Ceph
+| ceph_rhcs_version |"3" |A versão do Red Hat Ceph Storage para instalar
+| monitor_interface |Network Interface |A interface de rede na qual o monitor escuta
+| public_network | Address and Netmask | A sub-rede da rede pública do cluster, por exemplo, 192.168.122.0/24
+| cluster_network |Address and Netmask | A sub-rede da rede privada do cluster. Padrões para o valor definido para o public_network
+| journal_size | Size in MB | O tamanho a ser alocado para periódicos OSD. Deve ser o dobro do rendimento esperado durante o intervalo máximo de sincronização do armazenamento de arquivos (que é cinco segundos por padrão). Não deve ser menor que 5120 MB na maioria dos casos.
+|===
+
+====== Exemplo simples do *group_vars/all.yml*
+
+ fetch_directory: ~/ceph-ansible-keys
+ ceph_origin: repository
+ ceph_repository: rhcs
+ ceph_repository_type: cdn
+ ceph_rhcs_version: "3"
+ monitor_interface: eth0
+ public_network: 192.168.122.0/24
+ cluster_network: "{{ public_network }}"
+
+ journal_size: 5120
+
+====== Parametro Overrides
+O parâmetro ceph_conf_overrides dentro do arquivo group_vars / all.yml permite substituir os valores padrão de configuração do Ceph para um determinado parâmetro dentro de uma seção. Talvez seja necessário usar isso para ajustar ou configurar corretamente seu cluster.
+
+Por exemplo, se você precisar alterar o valor do parâmetro ceph_parameter_name de uma seção, inclua a seguinte diretiva em group_vars / all.yml:
+
+ ceph_conf_overrides:
+   section_name:
+     ceph_parameter_name: value
+
+===== Configurando o group_vars/osds
+
+ As opções de implementação do OSD são definidas no arquivo de configuração /usr/share/ceph-ansible/group_vars/osds.yml.
+ As variáveis configuradas nesse arquivo se aplicam a todos os hosts no grupo osds no inventário.
+ No mínimo, você precisa definir a lista de dispositivos a serem usados como OSDs e se os dados do OSD e as informações do diário devem ser colocados no mesmo dispositivo ou se eles usam dispositivos separados.
+
+Você vai se concentrar no cenário colocado no momento e assumir que todos os hosts OSD possuem hardware idêntico e usam os mesmos nomes de dispositivo para seus OSDs.
+Para este caso, um arquivo básico group_vars / osds.yml deve conter duas diretivas: uma variável osd_scenario definida como "collocated" e uma variável de dispositivos definida como uma lista de dispositivos a serem usados como OSDs.
+
+O seguinte arquivo group_vars / osds.yml configura três dispositivos em cada host OSD como OSDs:
+
+ osd_scenario: "collocated"
+ devices:
+   - /dev/sdb
+   - /dev/sdc
+   - /dev/sdd
+
+Como alternativa, você pode configurar seus hosts OSD usando o cenário "não-colocado".
+Isso usa dispositivos de armazenamento separados para dados OSD e o diário OSD. Um exemplo do arquivo group_vars / osds.yml aparece abaixo:
+
+ osd_scenario: "non-collocated"
+ devices:
+   - /dev/sdb
+   - /dev/sdc
+ dedicated_devices:
+   - /dev/sdd
+   - /dev/sde
+
+Neste exemplo, você tem dois OSDs em cada host OSD: / dev / sdb armazena dados e usa / dev / sdd como um diário, e / dev / sdc armazena dados e usa / dev / sde como um diário.
+
+Parametros chave para group_vars/osds.yml
+
+|===
+|Nome do parametro | Valor | Descriçào
+|osd_scenario | collocated ou non-collocated | Tipo de implantação de diário do OSD
+|devices| Uma lista dos nomes dos dispositivos a serem usados nos OSDs | Dispositivos para dados OSD colocados e partições de diário ou partições de dados OSD não colocados
+|dedicated_devices| Uma lista dos nomes dos dispositivos a serem usados em periódicos OSD não colocados | Dispositivos dedicados para OSD journals
+|===
+
+Se necessário, use o Guia de Instalação do Red Hat Ceph Storage 3.0 para obter informações sobre outros parâmetros pertinentes, incluindo configurações que usam dispositivos separados para dados OSD e periódicos.
+O arquivo */usr/share/ceph-ansible/group_vars/osds.yml.sample* também possui alguns exemplos adicionais.
+
+=== Atividade 03 : _Executar o  deployment Ceph Ansible_
+
+*Ao executar o procedimento de deployment do Cluster Ceph via Ansible tenha certeza dos seguintes pontos:*
+
+1. Logue no servidor Construa seu arquivo de inventario
+2. Tenha certeza de estar dentro do diretorio */usr/share/ceph-ansible*
+3. Valide os arquivos de configuração dentro diretorio _/usr/share/ceph-ansible/group_vars_
+4. Esteja logado com usuário 'ansible' e valide o usuário logado dentro de cada servidores
+
+    id
+
+5. Verifique se todos os servidores estão respondendo
+
+   ansible -i /etc/ansible/ -m ping
+
+6. sincronize o arquivos
+
+Execute a chamada para iniciar o deployment
+
+   ansible-playbook site.yml
+
+=== Atividade 04: _Checar a saúde do cluster pós instalação_
+
+Após a conclusão da instalação, você pode testar seu novo cluster do Ceph para verificar se a implementação está correta e se o cluster está funcionando.
+
+|===
+|Operação | Comando
+|Show cluster status |ceph -s
+|Watch live cluster changes | ceph -w
+|Show cluster free space status |ceph df
+|Show OSD usage | ceph osd df
+|Create users |ceph auth get-or-create
+|List users |ceph auth list
+|Display user permissions |ceph auth caps
+|Delete users|ceph auth del
 |===
 
 == Preparando o ambiente para instalação do Ceph
