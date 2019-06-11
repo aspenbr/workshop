@@ -1,0 +1,47 @@
+---
+-
+  hosts: all
+  name: "Openshift -- Preparação do host"
+  sudo: true
+  vars:
+    pool: 8a85f98260c27fc50160c32cc4365ccb
+
+  vars_prompt:
+  - name: "rhn_user"
+    prompt: "Digite o usuario RHN"
+    private: yes
+
+  - name: "rhn_password"
+    prompt: "Digite a senha do RHN"
+    private: yes
+
+  tasks:
+
+
+        - name: "Atualiza subscription manager "
+          yum:
+            name: subscription-manager
+            state: latest
+          ignore_errors: true
+
+        - name: "Registra servidor no RHSM"
+          shell: subscription-manager register --username={{ rhn_user }} --password={{ rhn_password }} --force
+          register: rhn_username
+          ignore_errors: true
+
+
+        - name: "Registra no pool Employer SKU"
+          shell: subscription-manager attach --pool={{ pool }}
+          ignore_errors: true
+
+
+        - name: "Desregistra todos REPO"
+          shell: subscription-manager repos --disable='*'
+
+
+        - name: "Registra REPO Ceph 3.2"
+          shell: "subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-server-rhceph-3-mon-rpms --enable=rhel-7-server-rhceph-3-osd-rpms --enable=rhel-7-server-rhceph-3-tools-rpms"
+          ignore_errors: False
+          register: verifycmrepos
+        - debug: var=verifycmrepos.stdout_lines   
+
