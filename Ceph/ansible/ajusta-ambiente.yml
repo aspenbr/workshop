@@ -1,0 +1,30 @@
+---
+-
+   hosts: all
+   name: Check Ambiente - Ceph 
+   #become_user: ansible
+   #become: yes
+   #sudo: true
+  
+
+
+
+   tasks:
+
+     - name: Check Time - Teste
+       shell: uptime
+
+     - name: Sync TIme 
+       shell: ntpdate 192.168.10.6 
+
+     - name:  "Check resolv.conf"
+       shell: cat /etc/resolv.conf
+
+     - name: "Resolver nome externo"
+       shell: nslookup www.uol.com.br
+
+     - name: "Teste acesso internet"
+       shell:  curl http://www.uol.com.br
+
+     - name: "Zera Iptables"
+       shell: iptables -t filter -F 

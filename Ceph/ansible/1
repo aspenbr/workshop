@@ -1,0 +1,22 @@
+---
+-
+  hosts: all
+  name: "Check Ambiente"
+  sudo: true
+  tasks:
+
+
+    - name: Check DNS interno
+      shell: "nslookup idm.labs.corp"
+
+
+    - name: Testa acesso internet
+      shell: "get https://www.uol.com.br" 
+
+    - name: Repositorios ativiados 
+      shell: "yum repolist"
+
+    - name: Sync horario
+      shell: "ntpdate 192.168.10.6"
+
+    

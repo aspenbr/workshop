@@ -1,0 +1,27 @@
+- name: Habilita Firewalld
+  service:
+     name: firewalld
+     state: started
+     enabled: yes
+
+-  name: Libera Porta MON
+   firewalld: 
+      zone: public
+      port: 6789/tcp 
+      permanent: yes 
+      state: enabled
+
+-  name: Libera Porta MGR
+   firewalld:
+      zone: public
+      port: 6800-7300/tcp
+      permanent: yes
+      state: enabled
+
+
+-  name: Libera Porta MDS
+   firewalld:
+      zone: public
+      port: 6800/tcp
+      permanent: yes
+      state: enabled

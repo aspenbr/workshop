@@ -1,0 +1,33 @@
+---
+-
+  hosts: all
+  name: "Check Ambiente"
+  sudo: true
+  tasks:
+
+
+    - name: Check DNS interno
+      shell: "nslookup idm.labs.corp"
+      ignore_errors: True
+      register: verifydnsinterno
+    - debug: var=verifydnsinterno.stdout_lines
+
+    - name: Testa acesso internet
+      uri:
+        url: http://www.uol.com.br
+
+    - name: Repositorios ativiados 
+      shell: "yum repolist"
+      ignore_errors: True
+      register: verifyrepo
+    - debug: var=verifyrepo.stdout_lines
+
+    - name: Sync horario
+      shell: "ntpdate 192.168.10.6"
+      register: command_result
+      ignore_errors: True
+      register: verifysync
+    - debug: var=verifysynctime.stdout_lines      
+
+
+
