@@ -13,10 +13,27 @@ Seja bem vindo ao laborátorio de  gerência do Ceph 3.2
 
 == Como é feita a gerência do Ceph ?
 
-== O pode do Ansible na gerência do Ceph Cluster
+O Ceph pode ser gerenciado de diversas formas. A forma mais tradicional é fazer as alterações do arquivo 'ceph.conf' e distribuir o arquivo entre todos os nós do Ceph via scp.
 
+Está abordagem é complexa e difícil de manter funcional. Pois todos os nós participantes do cluster precisam estar perfeitamente sincronizados.
+
+O Ansible consegue fazer o  papel de gerenciar os arquivos de configuração do Ceph de forma eficiente e com baixo risco.
+
+Conforme o seu cluster for aumentando de tamanho maior vai ser a demanda por gerenciamento seguro dos recursos e da administração dos serviço do Ceph
+
+
+== O poder do Ansible na gerência do Ceph Cluster
+
+Vantagens de utlizar Ansible para gerenciamento do Ceph
+
+ * O Ansible é idempotente permitindo apenas alterar ou executar uma ação no objeto que sofreu ação
+ * A segurança de manobra, todo os recursos de gerenciamento do Ceph via Ansible, são feitos através de playbooks construídos pela Red Hat.
+ * Suporte fim a fim.  Uma vez que os scripts são criados pela Red Hat existe um trabalho de melhoria continua para manter os scripts funcionais e ao apresentar falhas serem imediatamente corrigidos.
+ * Controle - Com Ansible é possível configurar de forma mais precisa o cluster ceph. Seja usando o iventário Ceph ou gerenciando um recurso específico do cluster.
 
 == Acessando as métricas do Ceph
+
+O Ceph dentro da sua arquitetura tem o recursos chamado _Managers_. O Managers (MGRs), tem a função de  controlar as métricas de tempo de execução e expõem as informações do cluster por meio de um painel baseado no navegador da Web e da API REST.
 
 
 === Workout do laborátorio02 - Atividades
@@ -29,8 +46,264 @@ Seja bem vindo ao laborátorio de  gerência do Ceph 3.2
 |03| Acessar os recursos de métricas
 |===
 
-=== Gerenciando  as configurações do ceph cluster via Ansible
+=== Atividade 1.0 - Expandindo os discos do cluster Ceph
+Neste cenário vamos trabalhar no caso de uso de expanção da capacidade de armazenamento do Ceph.
 
-=== Expandindo os discos do cluster Ceph
+O cluster Ceph atual está utilizando três servidores dedicados para função do OSD (data). Cada servidor foi configurado para utilizar  2 discos (vdb/vdc). Vamos agora adicionar mais um disco (vdd) através do Ansible.
 
-=== Acessando os recursos de métricas
+*Expandindo o tamanho do cluster do Ceph*
+
+1. Loge novamente no servidor cephdeploy.labs.corp
+2. Entre no diretorio  *cd /usr/share/ceph-ansible*
+3. Abra o arquivo osds.yml e faça alteração da seguinte forma:
+
+  devices:
+    - /dev/vdb
+    - /dev/vdc
+    - /dev/vdd
+
+4. Com alteração feita execute novamente o ansible-playbooks
+
+   ansible-playbook site.yml
+
+5. Após a execução do playbook 'site.yml' os novos discos dedicados ao OSD foram instalados. Você terá uma tela com a seguite saída:
+
+   TASK [show ceph status for cluster ceph] *****************************************************************************************************************************************
+   Tuesday 11 June 2019  23:06:57 -0300 (0:00:00.854)       0:07:45.055 **********
+   ok: [ceph01.labs.corp -> ceph01.labs.corp] => {
+       "msg": [
+           "  cluster:",
+           "    id:     4c595cd7-220d-48d7-80fc-88f4b6dd8a84",
+           "    health: HEALTH_OK",
+           " ",
+           "  services:",
+           "    mon: 3 daemons, quorum ceph01,ceph02,ceph03",
+           "    mgr: ceph01(active), standbys: ceph02, ceph03",
+           "    osd: 9 osds: 9 up, 9 in",
+           " ",
+           "  data:",
+           "    pools:   0 pools, 0 pgs",
+           "    objects: 0 objects, 0B",
+           "    usage:   9.03GiB used, 125GiB / 134GiB avail",
+           "    pgs:     ",
+           " "
+       ]
+   }
+
+   PLAY RECAP ***********************************************************************************************************************************************************************
+   ceph01.labs.corp           : ok=155  changed=2    unreachable=0    failed=0
+   ceph02.labs.corp           : ok=141  changed=2    unreachable=0    failed=0
+   ceph03.labs.corp           : ok=143  changed=2    unreachable=0    failed=0
+   ceph04.labs.corp           : ok=107  changed=2    unreachable=0    failed=0
+   ceph05.labs.corp           : ok=103  changed=2    unreachable=0    failed=0
+   ceph06.labs.corp           : ok=103  changed=2    unreachable=0    failed=0
+   cephclient.labs.corp       : ok=48   changed=0    unreachable=0    failed=0
+
+
+   INSTALLER STATUS *****************************************************************************************************************************************************************
+   Install Ceph Monitor        : Complete (0:01:39)
+   Install Ceph Manager        : Complete (0:01:48)
+   Install Ceph OSD            : Complete (0:02:16)
+   Install Ceph Client         : Complete (0:01:00)
+
+   Tuesday 11 June 2019  23:06:58 -0300 (0:00:00.074)       0:07:45.130 **********
+   ===============================================================================
+   ceph-common : install redhat ceph packages ------------------------------------------------------------------------------------------------------------------------------- 19.83s
+   ceph-common : install redhat ceph packages ------------------------------------------------------------------------------------------------------------------------------- 17.10s
+   ceph-common : install redhat dependencies -------------------------------------------------------------------------------------------------------------------------------- 16.84s
+   ceph-common : install redhat dependencies -------------------------------------------------------------------------------------------------------------------------------- 16.76s
+   ceph-common : install redhat ceph packages ------------------------------------------------------------------------------------------------------------------------------- 16.65s
+   ceph-common : install redhat dependencies -------------------------------------------------------------------------------------------------------------------------------- 16.54s
+   ceph-common : install redhat ceph packages ------------------------------------------------------------------------------------------------------------------------------- 16.43s
+   ceph-common : install redhat dependencies -------------------------------------------------------------------------------------------------------------------------------- 16.19s
+   ceph-mgr : install ceph-mgr package on RedHat or SUSE -------------------------------------------------------------------------------------------------------------------- 13.17s
+   ceph-osd : install dependencies ------------------------------------------------------------------------------------------------------------------------------------------ 13.13s
+   ceph-osd : activate osd(s) when device is a disk ------------------------------------------------------------------------------------------------------------------------- 10.46s
+   ceph-common : enable red hat storage monitor repository ------------------------------------------------------------------------------------------------------------------- 7.78s
+   ceph-osd : manually prepare ceph "bluestore" non-containerized osd disk(s) with collocated osd data and journal ----------------------------------------------------------- 6.37s
+   gather and delegate facts ------------------------------------------------------------------------------------------------------------------------------------------------- 5.93s
+   ceph-common : purge yum cache --------------------------------------------------------------------------------------------------------------------------------------------- 5.77s
+   ceph-common : purge yum cache --------------------------------------------------------------------------------------------------------------------------------------------- 5.75s
+   ceph-common : purge yum cache --------------------------------------------------------------------------------------------------------------------------------------------- 5.42s
+   ceph-common : purge yum cache --------------------------------------------------------------------------------------------------------------------------------------------- 5.11s
+   ceph-config : create ceph initial directories ----------------------------------------------------------------------------------------------------------------------------- 3.84s
+   ceph-config : create ceph initial directories ----------------------------------------------------------------------------------------------------------------------------- 3.81s
+   [ansible@cephdeploy ceph-ansible]$
+
+   6. Validando a instalação dos novos discos
+
+  * Antes da instalação do discos o status do cluster estava assim: *
+
+    [root@ceph01 ~]# ceph -s
+    cluster:
+     id:     4c595cd7-220d-48d7-80fc-88f4b6dd8a84
+     health: HEALTH_OK
+     services:
+      mon: 3 daemons, quorum ceph01,ceph02,ceph03
+      mgr: ceph01(active), standbys: ceph02, ceph03
+      osd: 6 osds: 6 up, 6 in
+
+    data:
+     pools:   0 pools, 0 pgs
+     objects: 0 objects, 0B
+     usage:   6.01GiB used, 83.4GiB / 89.4GiB avail
+     pgs:
+
+    * Após a instalação do discos o status do cluster vai ficar desta forma :  *
+
+     [root@cephclient ~]# ceph -s
+     cluster:
+      id:     4c595cd7-220d-48d7-80fc-88f4b6dd8a84
+      health: HEALTH_OK <3>
+     services:
+      mon: 3 daemons, quorum ceph01,ceph02,ceph03
+      mgr: ceph01(active), standbys: ceph02, ceph03
+      osd: 9 osds: 9 up, 9 in <1>
+     data:
+      pools:   0 pools, 0 pgs
+      objects: 0 objects, 0B
+      usage:   9.03GiB used, 125GiB / 134GiB avail <2>
+      pgs:
+
+<1> Observe a quantidade de OSD que saltou de 6 para 9
+<2> Observe o volume de armazenamento que saltou de 89.4GiB para 134GiB
+<3> Observe a saúde do cluster que continua ok e sem nenhum problema
+
+=== Atividade 2.0 - Gerenciando  as configurações do Ceph cluster via Ansible
+
+Neste cenário vamos trabalhar no caso seguinte caso de uso:
+
+_Imagine que temos uma configuração a ser realiada dentro do /etc/ceph.conf. Precisamos alterar o parâmetro de réplica do cluster de 2 (padrão) para 3._
+
+Os parâmetros existentes:
+
+   osd_pool_default_size: 2
+   osd_pool_default_min_size: 1
+
+Novos parâmetros a serem alterados:
+
+  ceph_conf_overrides:
+    global:
+      osd_pool_default_size: 3
+      osd_pool_default_min_size: 1
+      mon_allow_pool_delete=true
+
+*Procedimento para alteração da configuração do cluster via Ansible*
+
+1. Entre dentro do arquivo /usr/share/ceph-ansible/group_vars/all.yml
+2. Faça alteração dos parâmetros abaixo
+
+    ceph_conf_overrides:
+      global:
+        osd_pool_default_size: 3
+        osd_pool_default_min_size: 1
+        mon_allow_pool_delete: true
+
+2.1 Busque pela linha: 'ceph_conf_overrides' para fazer as alterações.
+
+3. Execute o playbook 'ansible-playbook site.yml'
+
+4. Após a execução do playbook 'site.yml' você terá o seguinte resultado:
+
+ PLAY RECAP ***********************************************************************************************************************************************************************
+ ceph01.labs.corp           : ok=168  changed=3    unreachable=0    failed=0
+ ceph02.labs.corp           : ok=154  changed=3    unreachable=0    failed=0
+ ceph03.labs.corp           : ok=158  changed=5    unreachable=0    failed=0
+ ceph04.labs.corp           : ok=119  changed=3    unreachable=0    failed=0
+ ceph05.labs.corp           : ok=114  changed=2    unreachable=0    failed=0
+ ceph06.labs.corp           : ok=114  changed=2    unreachable=0    failed=0
+ cephclient.labs.corp       : ok=60   changed=1    unreachable=0    failed=0
+ INSTALLER STATUS *****************************************************************************************************************************************************************
+ Install Ceph Monitor        : Complete (0:03:24)
+ Install Ceph Manager        : Complete (0:01:54)
+ Install Ceph OSD            : Complete (0:07:59)
+ Install Ceph Client         : Complete (0:01:16)
+ Wednesday 12 June 2019  04:17:41 -0300 (0:00:00.074)       0:15:54.150 ******** <1>
+ ===============================================================================
+ ceph-handler : restart ceph osds daemon(s) - non container -------------------------------------------------------------------------------------------------------------- 301.28s <2>
+ ceph-handler : restart ceph mon daemon(s) - non container ---------------------------------------------------------------------------------------------------------------- 32.40s
+ ceph-handler : restart ceph mgr daemon(s) - non container ---------------------------------------------------------------------------------------------------------------- 31.34s
+ ceph-common : install redhat ceph packages ------------------------------------------------------------------------------------------------------------------------------- 20.82s
+ ceph-config : generate ceph configuration file: ceph.conf ---------------------------------------------------------------------------------------------------------------- 18.00s
+ ceph-common : install redhat dependencies -------------------------------------------------------------------------------------------------------------------------------- 17.70s
+ ceph-config : generate ceph configuration file: ceph.conf ---------------------------------------------------------------------------------------------------------------- 17.63s
+ ceph-common : install redhat dependencies -------------------------------------------------------------------------------------------------------------------------------- 17.56s
+ ceph-common : install redhat ceph packages ------------------------------------------------------------------------------------------------------------------------------- 17.51s
+ ceph-common : install redhat ceph packages ------------------------------------------------------------------------------------------------------------------------------- 17.11s
+ ceph-common : install redhat dependencies -------------------------------------------------------------------------------------------------------------------------------- 17.08s
+ ceph-common : install redhat ceph packages ------------------------------------------------------------------------------------------------------------------------------- 17.05s
+ ceph-common : install redhat dependencies -------------------------------------------------------------------------------------------------------------------------------- 16.59s
+ ceph-osd : install dependencies ------------------------------------------------------------------------------------------------------------------------------------------ 13.75s
+ ceph-mgr : install ceph-mgr package on RedHat or SUSE -------------------------------------------------------------------------------------------------------------------- 13.29s
+ gather and delegate facts ------------------------------------------------------------------------------------------------------------------------------------------------- 6.87s
+ ceph-common : purge yum cache --------------------------------------------------------------------------------------------------------------------------------------------- 6.36s
+ ceph-config : generate ceph configuration file: ceph.conf ----------------------------------------------------------------------------------------------------------------- 6.15s
+ ceph-common : purge yum cache --------------------------------------------------------------------------------------------------------------------------------------------- 6.01s
+ ceph-common : purge yum cache --------------------------------------------------------------------------------------------------------------------------------------------- 5.95s
+ [ansible@cephdeploy ceph-ansible]$
+
+<1> Tempo total gasto para configurar todos os nós com novo modelo de configuração.
+<2> O playbook  trata  os daemons osds, mon e mgr a serem aplicados os novos parâmetros dentro do cluster.
+
+5. - Valide a configuração se podemos de fator remover ou não um pools
+
+5.1 - Entre dentro do servidor ceph01 e execute o comando abaixo
+
+  [root@ceph01 ~]# ceph daemon mon.ceph01 config get mon_allow_pool_delete
+  {
+    "mon_allow_pool_delete": "true"
+  }
+
+
+
+
+
+
+=== Atividade 3.0 - Visualizando os recursos de armazenamentos
+
+Nesta atividade entenderemos melhor os recursos que a ferramenta Ceph entrega para visualizar o conjunto de armazenamento de dados entregue pelo osd.
+
+
+O comando ceph osd tree mostra a árvore CRUSH e verifica a localização do OSD dentro do cluster Ceph
+
+Execute o comando *ceph osd tree*
+
+ [root@cephclient ~]# ceph osd tree
+ ID CLASS WEIGHT  TYPE NAME       STATUS REWEIGHT PRI-AFF
+ -1       0.13129 root default
+ -7       0.04376     host ceph04
+ 2   hdd 0.01459         osd.2       up  1.00000 1.00000
+ 3   hdd 0.01459         osd.3       up  1.00000 1.00000
+ 8   hdd 0.01459         osd.8       up  1.00000 1.00000
+ -3       0.04376     host ceph05
+ 1   hdd 0.01459         osd.1       up  1.00000 1.00000
+ 5   hdd 0.01459         osd.5       up  1.00000 1.00000
+ 6   hdd 0.01459         osd.6       up  1.00000 1.00000
+ -5       0.04376     host ceph06
+ 0   hdd 0.01459         osd.0       up  1.00000 1.00000
+ 4   hdd 0.01459         osd.4       up  1.00000 1.00000
+ 7   hdd 0.01459         osd.7       up  1.00000 1.00000
+
+
+O comando *ceph osd df* é possivel visualizar a classe do disco, peso , tamanho (capacidade), capacidade em uso, disponibilidade uso e porcentagem de usado
+
+Execute o comando *ceph osd df*
+
+ [root@cephclient ~]# ceph osd df
+ ID CLASS WEIGHT  REWEIGHT SIZE    USE     AVAIL   %USE VAR  PGS
+  2   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+  3   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+  8   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+  1   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+  5   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+  6   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+  0   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+  4   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+  7   hdd 0.01459  1.00000 14.9GiB 1.01GiB 13.9GiB 6.75 1.00   0
+                    TOTAL  134GiB 9.05GiB  125GiB 6.75
+
+
+O comando o *ceph osd stat* demonstra o status do OSD
+
+  [root@cephclient ~]# ceph osd stat
+  9 osds: 9 up, 9 in

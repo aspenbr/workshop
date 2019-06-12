@@ -295,7 +295,7 @@ O seguinte arquivo group_vars / osds.yml configura três dispositivos em cada ho
  devices:
    - /dev/sdb
    - /dev/sdc
-   - /dev/sdd
+
 
 Como alternativa, você pode configurar seus hosts OSD usando o cenário "não-colocado".
 Isso usa dispositivos de armazenamento separados para dados OSD e o diário OSD. Um exemplo do arquivo group_vars / osds.yml aparece abaixo:
