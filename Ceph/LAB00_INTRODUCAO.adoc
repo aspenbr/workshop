@@ -5,3 +5,5 @@ Este documento é do projeto Ceph - LABS
 
 include::LAB01_INSTALACAO.adoc[]
 include::LAB02_GERENCIA.adoc[]
+include::LAB03_POOLS.adoc[]
+include::LAB04_BLOCOSTORAGE.adoc[]

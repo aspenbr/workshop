@@ -1,4 +1,135 @@
 = LAB04 - Trabalhando com Bloco provido pelo Ceph
 
 
-= LAB04 - Trabalhando com Bloco provido pelo Ceph
+
+Os dispositivos de bloco são o tipo de armazenamento de longo prazo mais comum no servidor, no laptop e em outros sistemas de computação. Discos rígidos baseados em discos magnéticos giratórios e unidades de estado sólido baseadas em memória não volátil são dispositivos de bloco. Os dados em blocos de tamanho fixo são armazenados no dispositivo de bloco. Para gerenciar mais facilmente o armazenamento, você pode formatar um dispositivo de bloco com um sistema de arquivos e montá-lo na hierarquia do sistema de arquivos do Linux.
+
+Você pode usar o recurso RDBD (RTPS Block Device) para fornecer armazenamento em block do cluster do Red Hat Ceph Storage. Ele permite que você crie dispositivos de bloco virtuais armazenados como imagens RBD em pools no cluster do Red Hat Ceph Storage.
+
+O cliente do kernel (krbd) mapeia uma imagem RBD para um dispositivo de bloco do Linux. Como alternativa, o libvirtd ou o OpenStack usa a biblioteca librbd do espaço do usuário para fornecer armazenamento RBD para máquinas virtuais e instâncias de nuvem. Esses clientes permitem que as imagens RBD sejam usadas por servidores bare-metal ou máquinas virtuais como armazenamento baseado em bloco normal.
+
+No ambiente OpenStack, esses dispositivos RBD são anexados e mapeados em servidores Linux e podem ser usados como dispositivos de inicialização. O armazenamento real usado pelos dispositivos de bloco virtual é distribuído pelo cluster do Red Hat Ceph Storage, que fornece acesso de alto desempenho usando a rede IP.
+
+
+=== Workout do laborátorio04 - Atividades
+
+.Atividades do laboratório04
+|===
+|Atividade | Objetivos
+|01| Criação uma imagem RADOS - Block Device
+|02| Obter informações sobre uma imagem RADO - Block Device Image
+|03| Mapear a imagem rados a um cliente
+|04| Utilizar Rados Block device Imagem como um bloco de disco comum
+|05| Snapshot da imagem
+|06| Clone de imagem
+Importar e exportar imagem
+|===
+
+*Observação importante*
+
+=== Atividade 01: _Criação uma imagem RADOS - Block Device_
+
+1) Loge no servidor cephclient.labs.corp
+  ssh root@cephclient.labs.corp
+
+2) Crie um pool do tipo 'pool_bloco_teste'
+
+  ceph osd pool create pool_bloco_teste 32 32
+
+3) Inicialize o pool para trabalhar com Rados Bloco Device (rbd)
+
+  rbd pool init  pool_bloco_teste
+
+4) Liste as informações dos pools e seus objetos
+
+  ceph df
+
+5) Crie a imgem RBD
+
+  rbd create pool_bloco_teste/teste01 --size=200M
+
+=== Atividade 02: _Obter informações sobre uma imagem RADO - Block Device Image_
+
+6) Liste o conteudo da imagem
+
+   rbd -p pool_bloco_teste ls
+
+7) Liste as informações da imagem
+
+   rbd info pool_bloco_teste/teste01
+
+
+=== Atividade 03: _Mapear a imagem rados a um cliente_
+
+8) Mapeie a imagem teste01 no cephclient
+
+   rbd map -p pool_bloco_teste/teste01
+
+9) Valide informação sobre mapeamento  - rbd0
+
+   rbd showmapped
+
+10) Formate a imagem mapeada
+
+   mkfs.ext4 /dev/rbd0
+
+=== Atividade 04: _Utilizar Rados Block device Imagem como um bloco de disco comum_
+
+11) Monte a imagem já formatada
+
+   mount /dev/rbd0 /mnt/rbd
+
+12) Popule a imagem
+
+    dd if=/dev/zero of=/mnt/rbd/testrbd bs=10M count=1
+
+13) Verifique o uso do file system
+
+    df -h
+
+14) Agora verifique o conteudo do ceph
+
+    ceph df
+
+=== Atividade 05: _Tire snapshot de uma imagem_
+
+15) Tire snapshot - primeirosnapshot - da imagem teste01
+  rbd snap create pool_bloco_teste/teste01@primeirosnapshot
+
+16) Mapeie o snapshot
+  rbd map  pool_bloco_teste/teste01@primeirosnapshot
+
+17) Mostre o mapeamento ativo
+  rbd showmapped
+
+18) Monte o mapeamento
+  mount /dev/rbd1 /mnt/rbd2
+
+
+
+
+=== Atividade 06: _Clona a imagem_
+
+1) Relalize fsfreeze para garantir que ninguem altere o clone
+
+   fsfreeze --freeze
+
+2) Proteja o snap shot
+
+  rbd snap protect pool_bloco_teste/teste01@clonesnap
+
+3) Tire o clone
+
+  rbd clone pool_bloco_teste/teste01@clonesnap pool_bloco_teste/realclone
+
+4) Monte o clone
+
+  rbd map pool_bloco_teste/realclone
+  rbd showmapped
+  mount /dev/rbd2 /mnt/rbd2
+
+
+19) Desmonte mapeamento
+
+  umount /mnt/rbd
+  umount /mnt/rbd2
