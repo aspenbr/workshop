@@ -1,0 +1,26 @@
+--- 
+- 
+   name: fix repo 
+   host: web 
+   tasks: 
+
+
+     - name: rename file   epel-modular.repo
+       copy: 
+         remote_src: true 
+         src: /etc/yum.repos.d/epel-modular.repo
+         path: /etc/yum.repo.d/epel-modular.bk
+
+     - name: rename file   
+       copy: 
+         remote_src: true 
+         src: /etc/yum.repos.d/epel.repo
+         path: /etc/yum.repo.d/epel.bk
+
+     - name: remove os arquivos 
+       file: 
+         path: "{{ item }}"
+         state: abasent 
+       with_items: 
+         - /etc/yum.repos.d/epel.repo
+         - /etc/yum.repos.d/epel-modular.repo
